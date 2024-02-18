@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>app1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.css" integrity="sha512-OWGg8FcHstyYFwtjfkiCoYHW2hG3PDWwdtczPAPUcETobBJOVCouKig8rqED0NMLcT9GtE4jw6IT1CSrwY87uw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  </head>
+  <body style="height:100vh;">
+    <main style="height:100vh;" class="d-flex align-items-center justify-content-center">
+      <div class="content">
+        <h1 class="text-center">APP 1</h1>
+        <p class="text-center">Dispara mensagem para a fila rabbitmq.</p>
+        <form method="post" id="form-mensagem">
+          <div class="form-group">
+            <label for="message">Mensagem</label>
+            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+          </div>
+          <div class="form-group mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Enviar</button>
+          </div>
+        </form>
+        <h2 class="mt-4 h5">Mensagens recebidas</h2>
+        <ul class="list-group mt-4">
+        </ul>
+      </div>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.5/sweetalert2.min.js" integrity="sha512-WHVh4oxWZQOEVkGECWGFO41WavMMW5vNCi55lyuzDBID+dHg2PIxVufsguM7nfTYN3CEeQ/6NB46FWemzpoI6Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4" crossorigin="anonymous"></script>
+    <script>
+      const socketUrl = '<%= socketUrl %>';
+      const socket = io(socketUrl);
+      console.log('socket', socket)
+
+      socket.on('connect', () => {
+        console.log('socket connected');
+
+        socket.on('message', (data) => {
+          const { message } = data;
+          const ul = document.querySelector('.list-group');
+          const li = document.createElement('li');
+          li.classList.add('list-group-item');
+          li.textContent = message;
+          ul.prepend(li);
+        });
+      });
+
+      socket.on('disconnect', () => {
+        console.log('socket disconnected');
+      });
+
+      document.getElementById('form-mensagem').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const message = document.getElementById('message').value;
+        if (!message) {
+          Swal.fire({
+            title: 'Informe a mensagem',
+            icon: 'warning'
+          });
+          return;
+        }
+        Swal.fire({
+          title: 'Enviando mensagem...',
+          willOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        fetch('/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        })
+        .then(response => response.json())
+        .then(data => {
+          Swal.close();
+          document.getElementById('message').value = '';
+        })
+        .catch(error => {
+          console.error('error', error);
+          Swal.close();
+          Swal.fire({
+            title: 'Erro ao enviar mensagem',
+            icon: 'error'
+          });
+        })
+      });
+    </script>
+  </body>
+</html>
