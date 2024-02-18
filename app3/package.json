@@ -1,0 +1,11 @@
+{
+  "name": "app3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "axios": "^1.6.7",
+    "bee-queue": "^1.7.1"
+  }
+}

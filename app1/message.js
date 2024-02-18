@@ -19,11 +19,4 @@ async function publishMessage(queue, message) {
   });
 }
 
-async function consumeMessage(queue, callback) {
-  const conn = await amqp.connect(CONNECT_STRING);
-  const channel = await conn.createChannel();
-  await channel.assertQueue(queue, { durable: true });
-  channel.consume(queue, callback, { noAck: true });
-}
-
-module.exports = { publishMessage, consumeMessage };
+module.exports = { publishMessage };

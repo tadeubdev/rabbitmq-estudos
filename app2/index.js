@@ -33,12 +33,18 @@ async function consumeMessage(queue, callback) {
   channel.consume(queue, callback, { noAck: true });
 }
 
-consumeMessage("mensagem", async (result) => {
-  const message = result.content.toString();
+consumeMessage("mensagem", async (data) => {
+  const payload = data.content.toString();
+  const { webhook_url, body } = JSON.parse(payload);
+  const message = body.message;
   const date = new Date();
   console.log(`[${date.toISOString()}] Received message: ${message}`);
   const encryptedMessage = await encryptMessage(message);
-  publishMessage("mensagem_callback", encryptedMessage).then(() => {
+  const webhookPayload = {
+    message: encryptedMessage,
+    webhook_url,
+  };
+  publishMessage("webhook", JSON.stringify(webhookPayload)).then(() => {
     console.log(`[${date.toISOString()}] Sent encrypted message: ${encryptedMessage}`);
   });
 });

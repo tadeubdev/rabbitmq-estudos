@@ -30,6 +30,23 @@ services:
     networks:
       - rabbitmq_network
 
+  app3:
+    build: ./app3
+    ports:
+      - "3070:3070"
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - rabbitmq_network
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+    networks:
+      - rabbitmq_network
+
 networks:
   rabbitmq_network:
     driver: bridge
